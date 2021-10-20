@@ -1,5 +1,8 @@
 # UDDIntakeBot
 
+![udd_shot](https://user-images.githubusercontent.com/63927113/138163547-521d637e-aba4-48a8-995c-afc2d9997b7e.png)
+
+
 ## Current commands
 
 - #### Add mentors `/add_mentor firstName lastName email`:
