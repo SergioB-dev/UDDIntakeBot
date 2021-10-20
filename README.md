@@ -46,6 +46,9 @@
 
 - #### Find all potential matches `/match mentee`:
   - Searches database for mentioned mentee and finds potential matches based on tech stack
+
+- #### Bulk insert `/add_doc`:
+  - Take a doc (csv for example) and parse every line and add every mentor/mentee from the doc
   
   
   
