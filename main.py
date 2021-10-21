@@ -8,17 +8,18 @@ import certifi
 import sqlite3
 import pandas as pd
 from datetime import datetime
+from helpers import ratios
 
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 from storage_manager import *
-
-import os
-import os.path
-import ssl
-import stat
-import subprocess
-import sys
+#
+# import os
+# import os.path
+# import ssl
+# import stat
+# import subprocess
+# import sys
 
 
 
@@ -36,7 +37,7 @@ FEEBACK_PROMPT = "Thank you, if you'd like to see anything done differently, ple
 
 
 
-def post_message(msg, channel='#general'):
+def post_message(msg, channel='#project-x'):
     client.chat_postMessage(channel=channel, text=msg)
 
 
@@ -122,12 +123,6 @@ def find_member():
     return Response(), 200
 
 
-
-
-
-
-
-
 @app.route('/suggestion', methods=['POST'])
 def gather_feedback():
     thank_you_text = 'Your feedback has been successfully submitted. ✅\nThank you!'
@@ -145,18 +140,18 @@ def gather_feedback():
 
     return Response(), 200
 
-@slack_event_adapter.on("message")      # Responds to any message sent
-def message(payload):
-
-    event = payload.get("event", {})
-    channel_id = event.get("channel")
-    user_id = event.get("user")
-    text = event.get("text")
-
-    if BOT_ID != user_id:
-        post_message(text)
-
-    print("Received")
+# @slack_event_adapter.on("message")      # Responds to any message sent
+# def message(payload):
+#
+#     event = payload.get("event", {})
+#     channel_id = event.get("channel")
+#     user_id = event.get("user")
+#     text = event.get("text")
+#
+#     if BOT_ID != user_id:
+#         post_message(text)
+#
+#     print("Received")
 
 @slack_event_adapter.on("app_mention")  # Responds to any mentions to the bot directly
 def app_mention(event_data):
@@ -169,6 +164,31 @@ def app_mention(event_data):
             channel=event["channel"],
             text=f"You said:\n>{event['text']}",
         )
+
+
+@app.route('/stats', methods=['POST'])
+def stats():
+    data = request.form
+    user_id = data.get('user_id')
+
+    both_counts = db_stats()
+    mentee_count = both_counts[0]
+    mentor_count = both_counts[1]
+    ratio = ratios(mentee_count, mentor_count)
+    post_message(ratio, channel='#project-x')
+
+    return Response(), 200
+
+@app.route('/help', methods=['POST'])
+def help():
+    data = request.form
+    user_id = data.get('user_id')
+    message = 'You can find everything you need to know here:\n' \
+              'https://github.com/SwiftSergio/UDDIntakeBot/blob/main/README.md \n' \
+                'If you still need more help send a message to: @Serg '
+
+    post_message(message, channel='#project-x')
+    return Response(), 200
 
 
 
