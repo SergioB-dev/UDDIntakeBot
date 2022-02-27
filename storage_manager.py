@@ -15,6 +15,25 @@ def create_db():                # Create the intial database, only called if db 
     connection.commit()
     connection.close()
 
+
+def db_stats():
+    connection = sqlite3.connect('data.db')
+    cursor = connection.cursor()
+
+    mentee_query = 'SELECT * FROM members WHERE role=?'
+    mentor_query = 'SELECT * FROM members WHERE role=?'
+
+    cursor.execute(mentee_query, ('Mentee',))
+    mentee_count = len(cursor.fetchall())
+
+    cursor.execute(mentor_query, ('Mentor',))
+    mentor_count = len(cursor.fetchall())
+
+    connection.close()
+
+    return (mentee_count, mentor_count)
+
+
 def search_db(search_query):
     connection = sqlite3.connect('data.db')
     cursor = connection.cursor()

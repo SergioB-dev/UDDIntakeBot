@@ -4,11 +4,11 @@ from pathlib import Path
 from dotenv import load_dotenv
 from flask import Flask, request, Response
 from slackeventsapi import SlackEventAdapter
-import certifi
-import sqlite3
-import pandas as pd
 from datetime import datetime
 from helpers import ratios
+
+
+from slack_methods import get_all_users
 
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
@@ -32,13 +32,17 @@ client = WebClient(token=os.environ.get('SLACK_TOKEN'))
 BOT_ID = client.api_call('auth.test')['user_id']
 logger = logging.getLogger(__name__)
 
-FEEBACK_PROMPT = "Thank you, if you'd like to see anything done differently, please consider leaving some feedback." \
+
+FEEDBACK_PROMPT = "Thank you, if you'd like to see anything done differently, please consider leaving some feedback." \
                  "Simply type /suggestion [Your feedback]"  # /Feedback is a resevered slack keyword.
 
 
 
 def post_message(msg, channel='#project-x'):
     client.chat_postMessage(channel=channel, text=msg)
+
+
+
 
 
 def upload_file(file, channel='C02HYQDP7EZ'):
@@ -67,7 +71,7 @@ def get_data():
     if user_input[1] == 'csv':              # user_input[1] here should be some data format specified by the user
         convert_db_to_csv()                 # Check and see whether we should update latest working version
         upload_file('output/output.csv', channel=user_id)      # Passing the user id as the channel is essentially a DM
-        post_message(FEEBACK_PROMPT, user_id)           # Asking user for feedback in DM
+        post_message(FEEDBACK_PROMPT, user_id)           # Asking user for feedback in DM
 
     else:
         pass
@@ -105,6 +109,12 @@ def add_mentor():
     return Response(), 200
 
 
+@app.route('/post', methods=['POST'])
+def test_external_post():
+    print('this is working')
+    post_message('Bot coming back online...', '#intake')
+    return Response(), 200
+
 @app.route('/find', methods=['POST'])
 def find_member():
 
@@ -134,11 +144,38 @@ def gather_feedback():
         txt_file.write(f'{date}\n')
         txt_file.write(f'{feedback}\n')
 
-
+    # DM the user
     post_message(thank_you_text, channel=user_id)
     print(f'Added feedback:\n {feedback} to input/feedback.txt')
 
     return Response(), 200
+
+@app.route('/stats', methods=['POST'])
+def stats():
+    data = request.form
+    user_id = data.get('user_id')
+
+    both_counts = db_stats()
+    mentee_count = both_counts[0]
+    mentor_count = both_counts[1]
+    ratio = ratios(mentee_count, mentor_count)
+    post_message(ratio, channel=user_id)
+
+    return Response(), 200
+
+@app.route('/help', methods=['POST'])
+def help():
+    data = request.form
+    user_id = data.get('user_id')
+    message = 'You can find everything you need to know here:\n' \
+              'https://github.com/SwiftSergio/UDDIntakeBot/blob/main/README.md \n' \
+                'If you still need more help send a message to: @Serg '
+
+    post_message(message, channel=user_id)
+    return Response(), 200
+
+
+# EVENT LISTENERS
 
 # @slack_event_adapter.on("message")      # Responds to any message sent
 # def message(payload):
@@ -166,35 +203,12 @@ def app_mention(event_data):
         )
 
 
-@app.route('/stats', methods=['POST'])
-def stats():
-    data = request.form
-    user_id = data.get('user_id')
 
-    both_counts = db_stats()
-    mentee_count = both_counts[0]
-    mentor_count = both_counts[1]
-    ratio = ratios(mentee_count, mentor_count)
-    post_message(ratio, channel='#project-x')
-
-    return Response(), 200
-
-@app.route('/help', methods=['POST'])
-def help():
-    data = request.form
-    user_id = data.get('user_id')
-    message = 'You can find everything you need to know here:\n' \
-              'https://github.com/SwiftSergio/UDDIntakeBot/blob/main/README.md \n' \
-                'If you still need more help send a message to: @Serg '
-
-    post_message(message, channel='#project-x')
-    return Response(), 200
+## EVENTBRITE
 
 
 
-
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
+    # get_all_users()
     app.run(port=8080,debug=True)
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
