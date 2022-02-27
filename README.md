@@ -4,6 +4,10 @@
 
 ## Current commands
 
+### Adding members to database 👥
+
+***
+
 - #### Add mentors `/add_mentor firstName lastName email`:
   - Add mentors to a collective database
   - Alerts intake channel of change
@@ -11,6 +15,10 @@
 - #### Add mentees `/add_mentee firstName lastName email`:
   - Add mentees to a collective database
   - Alerts intake channel of change
+
+### Getting information 📚
+  
+  ***
   
 - #### Get Latest `/get latest preferredFormat`:
   - Slack bot will DM you with a file of the latest Mentor/Mentee database
@@ -26,9 +34,21 @@
     - first name
     - last name
     - email
+
+- #### Stats `/stats`:
+  - Returns big picture stats
+    - Mentee to Mentor ratio
+    - How many mentees are not paired (near future)
+    - More to come! ⏱
       
+### Leaving feedback 👍     
+
+***
+
 - #### Leave feedback `/suggestion yourFeedback`:
   - Leave feedback for improvements, this is v1 after all!
+
+***
   
   
 ## Future commands
